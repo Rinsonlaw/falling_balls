@@ -3,3 +3,6 @@ theme: jekyll-theme-cayman
 title: Falling Balls
 show_downloads: true
 google_analytics: 'UA-93575325-1'
+
+github：
+  repository_name: "Falling Balls"
