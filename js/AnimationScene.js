@@ -1,6 +1,80 @@
 // 球的颜色
 var fillSytles = ["#ff5722", "#aaaaaa", "#F44336", "#607D8B", "#FFC107", "#795548", "#4CAF50"];
 
+/**
+ * SoundPool 音频节点池
+ * 复用音频节点，避免每次播放都克隆导致内存泄漏
+ *
+ * @param {HTMLAudioElement} sourceAudio  原始音频元素
+ * @param {Number}           poolSize     池大小
+ * @constructor
+ */
+var SoundPool = function (sourceAudio, poolSize) {
+    this.pool = [];
+    this.poolSize = poolSize || 4;
+
+    // 克隆 source 子元素（sourceAudio 可能没有直接 src，而是用 <source> 子元素）
+    var sourceChildren = sourceAudio.querySelectorAll('source');
+
+    for (var i = 0; i < this.poolSize; i++) {
+        var audio = new Audio();
+        if (sourceChildren.length > 0) {
+            for (var j = 0; j < sourceChildren.length; j++) {
+                var src = document.createElement('source');
+                src.src = sourceChildren[j].src;
+                src.type = sourceChildren[j].type;
+                audio.appendChild(src);
+            }
+        } else {
+            audio.src = sourceAudio.src;
+        }
+        audio.preload = 'auto';
+        this.pool.push({
+            audio: audio,
+            isPlaying: false
+        });
+    }
+};
+
+SoundPool.prototype = {
+    constructor: SoundPool,
+
+    /**
+     * 播放音频
+     *
+     * @param {Number} volume  音量 (0-1)
+     */
+    play: function (volume) {
+        volume = volume !== undefined ? volume : 1.0;
+
+        // 找到一个空闲的节点
+        for (var i = 0; i < this.pool.length; i++) {
+            var node = this.pool[i];
+            if (!node.isPlaying) {
+                node.audio.volume = volume;
+                node.isPlaying = true;
+                node.audio.currentTime = 0;
+                node.audio.play().catch(function () {
+                    // 忽略播放失败（如用户未与页面交互）
+                });
+                node.audio.onended = function () {
+                    node.isPlaying = false;
+                };
+                return;
+            }
+        }
+
+        // 所有节点都在使用中，覆盖第一个（最旧的）
+        var node = this.pool[0];
+        node.audio.volume = volume;
+        node.audio.currentTime = 0;
+        node.audio.play().catch(function () {});
+        node.audio.onended = function () {
+            node.isPlaying = false;
+        };
+    }
+};
+
 // 物理引擎相关
 var v = cp.v;   // vector类
 var GRABABLE_MASK_BIT = 1 << 31;
@@ -41,6 +115,11 @@ var AnimationScene = function (canvas) {
     // 多媒体对象
     this.imageArray = gameDirector.mediaObjects.image.content;
     this.audioArray = gameDirector.mediaObjects.audio.content;
+
+    // 音频节点池（避免频繁 cloneNode 导致内存泄漏）
+    this.soundPoolBounce = new SoundPool(this.audioArray['bounce'], 4);
+    this.soundPoolGoal = new SoundPool(this.audioArray['goal'], 4);
+    this.soundPoolTouchBuff = new SoundPool(this.audioArray['touchBuff'], 4);
 
     // 游戏控制相关
     this.space = new cp.Space();    // 重力空间
@@ -439,10 +518,7 @@ AnimationScene.prototype = {
 
         // 球与针的碰撞处理
         space.addCollisionHandler(COLLISION_TYPE.BALL, COLLISION_TYPE.PIN, null, null, null, function (arbiter, space) {
-                var audio = that.audioArray['bounce'].cloneNode(true);
-                audio.volume = 0.1;
-                audio.play();
-
+                that.soundPoolBounce.play(0.1);
                 return true;
             }
         );
@@ -458,8 +534,7 @@ AnimationScene.prototype = {
                 var collTypeB = shapeB.collision_type;
 
                 if (shapeA.isDead === false) {
-                    var audio = that.audioArray['goal'].cloneNode(true);
-                    audio.play();
+                    that.soundPoolGoal.play();
                 }
 
                 if (shapeA.isBorn === false) {
@@ -482,8 +557,7 @@ AnimationScene.prototype = {
                 var collTypeB = shapeB.collision_type;
 
                 if (shapeA.isDead === false) {
-                    var audio = that.audioArray['touchBuff'].cloneNode(true);
-                    audio.play();
+                    that.soundPoolTouchBuff.play();
                     that.score.updateValue();
                 }
 
