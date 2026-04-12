@@ -126,6 +126,9 @@ var AnimationScene = function (canvas) {
     this.fps = 0;                   // 帧率
     this.running = false;           // 运行标志
     this.scale = 1;                 // 缩放
+    this.fixedTimeStep = 1 / 60;    // 固定物理步长（秒）
+    this.accumulator = 0;           // 累积真实经过时间（秒）
+    this.maxSubSteps = 5;           // 每帧最多推进次数，避免卡顿后补帧过多
 
     // 玩家分数
     this.score = new Score(this.canvas.width / 2, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2);
@@ -322,8 +325,7 @@ AnimationScene.prototype = {
         this.running = true;
 
         var self = this;
-
-        var lastTime = 0;
+        var lastTime = performance.now();
         var step = function (time) {
             self.step(time - lastTime);
             lastTime = time;
@@ -333,7 +335,7 @@ AnimationScene.prototype = {
             }
         };
 
-        step(0);
+        raf(step.bind(this));
     },
 
     /**
@@ -363,17 +365,21 @@ AnimationScene.prototype = {
             this.fps = 0.9 * this.fps + 0.1 * (1000 / dt);
         }
 
-        var lastNumActiveShapes = this.space.activeShapes.count;
+        // 将毫秒转换为秒并限制上限，避免切后台回前台时一次性跳太多
+        var frameTime = Math.min(dt, 100) / 1000;
+        this.accumulator += frameTime;
 
-        var now = Date.now();
-        this.update(1 / 60);
-        this.simulationTime += Date.now() - now;
+        // 用固定步长推进物理世界，保证不同刷新率下手感一致
+        var subSteps = 0;
+        while (this.accumulator >= this.fixedTimeStep && subSteps < this.maxSubSteps) {
+            this.update(this.fixedTimeStep);
+            this.accumulator -= this.fixedTimeStep;
+            subSteps++;
+        }
 
         // 下面的判断条件是，如果没有物体在运动，则停止绘画
         // if (lastNumActiveShapes > 0) {
-        now = Date.now();
         this.draw();
-        this.drawTime += Date.now() - now;
         // }
     },
 
