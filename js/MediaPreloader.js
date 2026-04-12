@@ -69,18 +69,25 @@ MediaPreloader.prototype = {
      */
     preloadImage: function (name, imagePath) {
         var imageObject = new Image();
+        var preloader = this;
 
         // 为图片对象的路径赋值
         imageObject.src = imagePath;
 
         // 事件回调函数
-        imageObject.onload = this.onLoad;
-        imageObject.onerror = this.onError;
-        imageObject.onabort = this.onAbort;
-
-        // 为图片对象增加预加载器指针和加载状态
-        imageObject.ptrMediaPreloader = this;
-        imageObject.isLoaded = false;
+        imageObject.onload = function () {
+            imageObject.isLoaded = true;
+            preloader.nLoaded++;
+            preloader.onComplete();
+        };
+        imageObject.onerror = function () {
+            imageObject.isError = true;
+            preloader.onComplete();
+        };
+        imageObject.onabort = function () {
+            imageObject.isAbort = true;
+            preloader.onComplete();
+        };
 
         // 添加到mediaObjects
         this.mediaObjects.addImage(name, imageObject);
@@ -94,6 +101,7 @@ MediaPreloader.prototype = {
      */
     preloadAudio: function (name, audioPathList) {
         var audioObject = document.createElement('audio');
+        var preloader = this;
 
         // 为音频对象的路径赋值
         for (var i = 0; i < audioPathList.length; i++) {
@@ -105,13 +113,22 @@ MediaPreloader.prototype = {
         audioObject.playname = name;
 
         // 事件回调函数
-        audioObject.onloadeddata = this.onLoad;
-        audioObject.onerror = this.onError;
-        audioObject.onabort = this.onAbort;
+        audioObject.onloadeddata = function () {
+            audioObject.bLoaded = true;
+            preloader.nLoaded++;
+            preloader.onComplete();
+        };
+        audioObject.onerror = function () {
+            audioObject.isError = true;
+            preloader.onComplete();
+        };
+        audioObject.onabort = function () {
+            audioObject.isAbort = true;
+            preloader.onComplete();
+        };
 
-        // 为音频对象增加预加载器指针和加载状态
-        audioObject.ptrMediaPreloader = this;
-        audioObject.bLoaded = false;
+        // iOS Safari 需要主动调用 load 才能触发预加载
+        audioObject.load();
 
         // 添加到mediaObjects
         this.mediaObjects.addAudio(name, audioObject);
