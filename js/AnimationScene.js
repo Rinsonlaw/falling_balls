@@ -389,8 +389,13 @@ AnimationScene.prototype = {
      * @returns {Number}
      */
     getShortEdge: function () {
-        var height = this.hcanvasHeight;
-        var width = this.hcanvasWidth;
+        var height = gameDirector.cssHeight;
+        var width = gameDirector.cssWidth;
+
+        if (gameDirector.isMobile) {
+            height *= this.scaledRatio;
+            width *= this.scaledRatio;
+        }
 
         return (width < height) ? width : height;
     },

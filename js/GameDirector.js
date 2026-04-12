@@ -55,13 +55,19 @@ $(document).ready(function () {
  */
 var GameDirector = function (canvasId) {
     this.devicePixelRatio = getDevicePixelRatio();
+    this.cssWidth = document.body.clientWidth;
+    this.cssHeight = document.body.clientHeight;
 
     this.canvas = document.getElementById(canvasId);
-    this.canvas.width = document.body.clientWidth * this.devicePixelRatio;
-    this.canvas.height = document.body.clientHeight * this.devicePixelRatio;
+    this.canvas.width = this.cssWidth * this.devicePixelRatio;
+    this.canvas.height = this.cssHeight * this.devicePixelRatio;
 
     this.currentScene = null;   //当前场景
     this.mediaObjects = null;   //媒体对象
+    this.isMobile = navigator.maxTouchPoints > 0 ||
+                    window.matchMedia('(pointer: coarse)').matches;
+    // 缩放信息
+    this.scaledRatio = this.canvas.height / REFERENCE_CANVAS_HEIGHT;
 };
 
 GameDirector.prototype = {
@@ -109,8 +115,10 @@ function resizeCanvas() {
     }
 
     gameDirector.devicePixelRatio = getDevicePixelRatio();
-    gameDirector.canvas.width = document.body.clientWidth * gameDirector.devicePixelRatio;
-    gameDirector.canvas.height = document.body.clientHeight * gameDirector.devicePixelRatio;
+    gameDirector.cssWidth = document.body.clientWidth;
+    gameDirector.cssHeight = document.body.clientHeight;
+    gameDirector.canvas.width = gameDirector.cssWidth * gameDirector.devicePixelRatio;
+    gameDirector.canvas.height = gameDirector.cssHeight * gameDirector.devicePixelRatio;
 
     // 调整场景及其游戏组件
     gameDirector.currentScene.resize();
@@ -133,7 +141,11 @@ function getDevicePixelRatio() {
 function setBoundary(reference) {
     BALL_RADIUS = parseInt(reference * 0.05);
     PIN_RADIUS = parseInt(reference * 0.02);
-    BASKET_LENGTH = Math.max(parseInt(gameDirector.canvas.width * 0.1), 100);
+    var basketLength = Math.max(parseInt(gameDirector.cssWidth * 0.2), 100);
+    if (gameDirector.isMobile) {
+        basketLength *= gameDirector.scaledRatio;
+    }
+    BASKET_LENGTH = parseInt(basketLength);
     TIPS_FONT_SIZE = parseInt(reference * 0.1);
 
     if (IS_DEBUG_MODE) {
