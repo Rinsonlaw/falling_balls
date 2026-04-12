@@ -1,6 +1,5 @@
-# ▶ [PLAY](https://rinsonlaw.github.io/falling_balls/game)
-
 # Falling Balls!
+▶ [PLAY](https://rinsonlaw.github.io/falling_balls/game)
 
 一个基于 HTML5 Canvas 的物理解谜小游戏。控制挡板接住从顶部掉落的小球，避开针形障碍物，挑战高分！
 
