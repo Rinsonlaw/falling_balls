@@ -38,10 +38,10 @@ var StartScene = function (canvas) {
 
     // 按钮监听器
     this.bindOnTouchEndLeft = this.leftBtn.onTouchEndListener.bind(this.leftBtn);
-    this.bindOnMouseUpRight = this.leftBtn.onMouseUpListener.bind(this.leftBtn);
+    this.bindOnMouseUpLeft = this.leftBtn.onMouseUpListener.bind(this.leftBtn);
 
-    this.bindOnTouchScoreShape = this.leftBtn.onTouchEndListener.bind(this.rightBtn);
-    this.bindOnMouseUpScoreShape = this.leftBtn.onMouseUpListener.bind(this.rightBtn);
+    this.bindOnTouchEndRight = this.rightBtn.onTouchEndListener.bind(this.rightBtn);
+    this.bindOnMouseUpRight = this.rightBtn.onMouseUpListener.bind(this.rightBtn);
 };
 
 StartScene.prototype = {
@@ -53,10 +53,10 @@ StartScene.prototype = {
     init: function () {
         // 注册监听器
         this.canvas.addEventListener("touchend", this.bindOnTouchEndLeft);
-        this.canvas.addEventListener("mouseup", this.bindOnMouseUpRight);
+        this.canvas.addEventListener("mouseup", this.bindOnMouseUpLeft);
 
-        this.canvas.addEventListener("touchend", this.bindOnTouchScoreShape);
-        this.canvas.addEventListener("mouseup", this.bindOnMouseUpScoreShape);
+        this.canvas.addEventListener("touchend", this.bindOnTouchEndRight);
+        this.canvas.addEventListener("mouseup", this.bindOnMouseUpRight);
 
         // 绑定按钮监听事件回调函数
         this.leftBtn.onTouchEnd = this.changePlayerMode.bind(this);
@@ -114,10 +114,10 @@ StartScene.prototype = {
     destroy: function () {
         // 销毁按钮监听器
         this.canvas.removeEventListener("touchend", this.bindOnTouchEndLeft);
-        this.canvas.removeEventListener("mouseup", this.bindOnMouseUpRight);
+        this.canvas.removeEventListener("mouseup", this.bindOnMouseUpLeft);
 
-        this.canvas.removeEventListener("touchend", this.bindOnTouchScoreShape);
-        this.canvas.removeEventListener("mouseup", this.bindOnMouseUpScoreShape);
+        this.canvas.removeEventListener("touchend", this.bindOnTouchEndRight);
+        this.canvas.removeEventListener("mouseup", this.bindOnMouseUpRight);
 
         window.cancelAnimationFrame(this.requestID);
 

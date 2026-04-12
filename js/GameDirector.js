@@ -109,8 +109,8 @@ function resizeCanvas() {
     }
 
     gameDirector.devicePixelRatio = getDevicePixelRatio();
-    gameDirector.canvas.width = document.body.clientWidth * this.devicePixelRatio;
-    gameDirector.canvas.height = document.body.clientHeight * this.devicePixelRatio;
+    gameDirector.canvas.width = document.body.clientWidth * gameDirector.devicePixelRatio;
+    gameDirector.canvas.height = document.body.clientHeight * gameDirector.devicePixelRatio;
 
     // 调整场景及其游戏组件
     gameDirector.currentScene.resize();

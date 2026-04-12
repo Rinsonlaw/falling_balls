@@ -87,7 +87,7 @@ EndScene.prototype = {
 
         // 动态生成提示文字装载框
         var $body = $("body");
-        if ($body.find("#snackbar-container").size() == 0) {
+        if ($body.find("#snackbar-container").length == 0) {
             $("<div>", {
                     id: "snackbar-container"
                 }
@@ -216,8 +216,8 @@ EndScene.prototype = {
         this.audioArray['touchBtn'].play();
 
         // 动态生成提示框（同时只允许一个框出现）
-        $container = $("#snackbar-container");
-        if ($container.find(".snackbar").size() == 0) {
+        var $container = $("#snackbar-container");
+        if ($container.find(".snackbar").length == 0) {
 
             var snackbar = $("<div>", {
                 class: "snackbar",

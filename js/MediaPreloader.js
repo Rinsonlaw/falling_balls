@@ -94,10 +94,10 @@ MediaPreloader.prototype = {
      */
     preloadAudio: function (name, audioPathList) {
         var audioObject = document.createElement('audio');
-        var source = document.createElement('source');
 
         // 为音频对象的路径赋值
         for (var i = 0; i < audioPathList.length; i++) {
+            var source = document.createElement('source');
             source.src = audioPathList[i];
             source.type = mediaType[getExtentName(source.src)];
             audioObject.appendChild(source);

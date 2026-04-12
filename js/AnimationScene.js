@@ -80,7 +80,7 @@ var AnimationScene = function (canvas) {
     this.bindOnTouchStartLeft = this.leftBtn.onTouchStartListener.bind(this.leftBtn);
     this.bindOnTouchEndLeft = this.leftBtn.onTouchEndListener.bind(this.leftBtn);
 
-    this.bindOnTouchStartRight = this.leftBtn.onTouchStartListener.bind(this.rightBtn);
+    this.bindOnTouchStartRight = this.rightBtn.onTouchStartListener.bind(this.rightBtn);
     this.bindOnTouchEndRight = this.rightBtn.onTouchEndListener.bind(this.rightBtn);
 
     // 绑定按钮监听事件回调函数
