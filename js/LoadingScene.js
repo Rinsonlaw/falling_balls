@@ -89,7 +89,7 @@ LoadingScene.prototype.draw = function () {
 };
 
 LoadingScene.prototype.destroy = function () {
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("DESTROY");
     }
 };

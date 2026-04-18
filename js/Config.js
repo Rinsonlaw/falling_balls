@@ -30,3 +30,8 @@ FallingBalls.BASKET_LENGTH = 200;
 FallingBalls.TIPS_FONT_SIZE = 40;
 FallingBalls.SCORE_LIMITED_TARGET = 100;
 FallingBalls.TIME_LIMITED_TARGET = 60;
+
+// 调试开关
+FallingBalls.IS_SHOW_FPS = false;
+FallingBalls.IS_DEBUG_MODE = false;
+FallingBalls.REFERENCE_CANVAS_HEIGHT = 960;

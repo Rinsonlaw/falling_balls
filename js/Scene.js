@@ -14,7 +14,7 @@ var Scene = function (canvas) {
     this.hcanvasHeight = canvas.height / 2;
 
     // 缩放信息
-    this.scaledRatio = this.canvas.height / REFERENCE_CANVAS_HEIGHT;
+    this.scaledRatio = this.canvas.height / FallingBalls.REFERENCE_CANVAS_HEIGHT;
     this.scaledCanvasWidth = this.canvas.width / this.scaledRatio;
     this.scaledCanvasHeight = this.canvas.height / this.scaledRatio;
     this.scaledHcanvasWidth = this.hcanvasWidth / this.scaledRatio;
@@ -65,7 +65,7 @@ Scene.prototype = {
         this.hcanvasHeight = this.canvas.height / 2;
 
         // 缩放信息
-        this.scaledRatio = this.canvas.height / REFERENCE_CANVAS_HEIGHT;
+        this.scaledRatio = this.canvas.height / FallingBalls.REFERENCE_CANVAS_HEIGHT;
         this.scaledCanvasWidth = this.canvas.width / this.scaledRatio;
         this.scaledCanvasHeight = this.canvas.height / this.scaledRatio;
         this.scaledHcanvasWidth = this.hcanvasWidth / this.scaledRatio;

@@ -1,11 +1,3 @@
-// 模式类型
-var UNKNOWN = 0;        // 未知
-var TIME_LIMITED = 1;   // 限时模式
-var SCORE_LIMITED = 2;  // 限分数模式
-
-// 模式信息
-var MODE = UNKNOWN;
-
 /**
  * StartScene 开始场景，模式选择场景
  *
@@ -96,7 +88,7 @@ StartScene.prototype.destroy = function () {
 
     window.cancelAnimationFrame(this.requestID);
 
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("DESTROY:" + this.requestID);
     }
 };
@@ -111,20 +103,20 @@ StartScene.prototype.resize = function () {
 
 StartScene.prototype.changePlayerMode = function () {
     this.audioArray['touchBtn'].play();
-    MODE = TIME_LIMITED;
+    FallingBalls.MODE = FallingBalls.TIME_LIMITED;
 
     gameDirector.runScene(new AnimationScene(this.canvas));
-    if (IS_DEBUG_MODE){
+    if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED TIME MODE");
     }
 };
 
 StartScene.prototype.changeGroundMode = function () {
     this.audioArray['touchBtn'].play();
-    MODE = SCORE_LIMITED;
+    FallingBalls.MODE = FallingBalls.SCORE_LIMITED;
 
     gameDirector.runScene(new AnimationScene(this.canvas));
-    if (IS_DEBUG_MODE){
+    if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED SCORE MODE");
     }
 };

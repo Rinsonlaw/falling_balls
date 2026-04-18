@@ -44,12 +44,12 @@ Score.prototype = {
      */
     draw: function (ctx) {
         var value = this.value.toString(10);
-        ctx.font = TIPS_FONT_SIZE + "px Arial";
+        ctx.font = FallingBalls.TIPS_FONT_SIZE + "px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
         // 超时或到达目标分数要变色
-        if (value >= SCORE_LIMITED_TARGET && MODE == SCORE_LIMITED)
+        if (value >= FallingBalls.SCORE_LIMITED_TARGET && FallingBalls.MODE === FallingBalls.SCORE_LIMITED)
             ctx.fillStyle = "rgb(255,193,7)";
         else
             ctx.fillStyle = "#1e5574";

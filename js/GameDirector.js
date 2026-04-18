@@ -2,27 +2,6 @@
  * @author Wing-ho Law
  */
 
-var IS_SHOW_FPS = false;            //帧率显示器
-var IS_DEBUG_MODE = false;           //debug模式：console有输出
-var REFERENCE_CANVAS_HEIGHT = 960;  //参考高
-
-// 挡板移动代码
-var MOVE_CODE = {
-    STOP: 0,
-    LEFT: 1,
-    RIGHT: 2
-};
-
-var BALL_VELOCITY = 0;              // 小球最小速度
-var BALL_RADIUS = 0;                // 小球半径
-var BALL_ELASTIC = 0.99;            // 小球弹性系数
-var PIN_RADIUS = 0;
-var BASKET_VELOCITY_MAX = 8;
-var BASKET_LENGTH = 200;
-var TIPS_FONT_SIZE = 40;            // 提示信息的字体大小
-var SCORE_LIMITED_TARGET = 100;     // 对打模式的目标分数
-var TIME_LIMITED_TARGET = 60;
-
 var gameDirector;                   //游戏导演
 
 $(document).ready(function () {
@@ -42,7 +21,7 @@ $(document).ready(function () {
     gameDirector.runScene(new LoadingScene(gameDirector.canvas));
 
     // 帧率显示器
-    if (IS_SHOW_FPS) {
+    if (FallingBalls.IS_SHOW_FPS) {
         showFPS();
     }
 });
@@ -67,7 +46,7 @@ var GameDirector = function (canvasId) {
     this.isMobile = navigator.maxTouchPoints > 0 ||
                     window.matchMedia('(pointer: coarse)').matches;
     // 缩放信息
-    this.scaledRatio = this.canvas.height / REFERENCE_CANVAS_HEIGHT;
+    this.scaledRatio = this.canvas.height / FallingBalls.REFERENCE_CANVAS_HEIGHT;
 };
 
 GameDirector.prototype = {
@@ -110,7 +89,7 @@ function clearCanvas(canvas) {
  * 当浏览器窗口变化时，调整画布大小
  */
 function resizeCanvas() {
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("RESIZE");
     }
 
@@ -141,19 +120,19 @@ function getDevicePixelRatio() {
  * @param {Number} reference    参考量
  */
 function setBoundary(reference) {
-    BALL_RADIUS = parseInt(reference * 0.05);
-    PIN_RADIUS = parseInt(reference * 0.02);
+    FallingBalls.BALL_RADIUS = parseInt(reference * 0.05);
+    FallingBalls.PIN_RADIUS = parseInt(reference * 0.02);
     var basketLength = Math.max(parseInt(gameDirector.cssWidth * 0.2), 100);
     if (gameDirector.isMobile) {
         basketLength *= gameDirector.scaledRatio;
     }
-    BASKET_LENGTH = parseInt(basketLength);
-    TIPS_FONT_SIZE = parseInt(reference * 0.1);
+    FallingBalls.BASKET_LENGTH = parseInt(basketLength);
+    FallingBalls.TIPS_FONT_SIZE = parseInt(reference * 0.1);
 
-    if (IS_DEBUG_MODE) {
-        console.log("RACKET VELOCITY MAX:", BASKET_VELOCITY_MAX);
-        console.log("BALL RADIUS:", BALL_RADIUS);
-        console.log("TIPS FONT SIZE:", TIPS_FONT_SIZE);
+    if (FallingBalls.IS_DEBUG_MODE) {
+        console.log("RACKET VELOCITY MAX:", FallingBalls.BASKET_VELOCITY_MAX);
+        console.log("BALL RADIUS:", FallingBalls.BALL_RADIUS);
+        console.log("TIPS FONT SIZE:", FallingBalls.TIPS_FONT_SIZE);
     }
 }
 
@@ -388,7 +367,7 @@ Button.prototype = {
         var mouseX = event.clientX* gameDirector.devicePixelRatio;
         var mouseY = event.clientY* gameDirector.devicePixelRatio;
 
-        if (IS_DEBUG_MODE) {
+        if (FallingBalls.IS_DEBUG_MODE) {
             console.info("MOUSE DOWN: (" + mouseX + ", " + mouseY + ")");
         }
 
@@ -414,7 +393,7 @@ Button.prototype = {
         var mouseX = event.clientX* gameDirector.devicePixelRatio;
         var mouseY = event.clientY* gameDirector.devicePixelRatio;
 
-        if (IS_DEBUG_MODE) {
+        if (FallingBalls.IS_DEBUG_MODE) {
             console.info("MOUSE UP: (" + mouseX + ", " + mouseY + ")");
         }
 
@@ -441,7 +420,7 @@ Button.prototype = {
         var x = Number(touch.pageX) * gameDirector.devicePixelRatio; //页面触点X坐标
         var y = Number(touch.pageY) * gameDirector.devicePixelRatio; //页面触点Y坐标
 
-        if (IS_DEBUG_MODE) {
+        if (FallingBalls.IS_DEBUG_MODE) {
             console.info("TOUCH START: (" + x + ", " + y + ")");
         }
 
@@ -468,7 +447,7 @@ Button.prototype = {
         var x = Number(touch.pageX) * gameDirector.devicePixelRatio; //页面触点X坐标
         var y = Number(touch.pageY) * gameDirector.devicePixelRatio; //页面触点Y坐标
 
-        if (IS_DEBUG_MODE) {
+        if (FallingBalls.IS_DEBUG_MODE) {
             console.info("TOUCH END: (" + x + ", " + y + ")");
         }
 

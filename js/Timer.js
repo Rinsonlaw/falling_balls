@@ -52,11 +52,11 @@ Timer.prototype = {
      */
     draw: function (ctx) {
         var value = this.value.toString(10);
-        ctx.font = TIPS_FONT_SIZE + "px Arial";
+        ctx.font = FallingBalls.TIPS_FONT_SIZE + "px Arial";
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
 
-        if (value <= 0 && MODE == TIME_LIMITED)
+        if (value <= 0 && FallingBalls.MODE === FallingBalls.TIME_LIMITED)
             ctx.fillStyle = "rgb(255,193,7)";
         else
             ctx.fillStyle = "#1e5574";

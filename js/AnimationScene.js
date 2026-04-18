@@ -117,18 +117,18 @@ var AnimationScene = function (canvas) {
     this.maxSubSteps = 5;           // 每帧最多推进次数，避免卡顿后补帧过多
 
     // 玩家分数
-    this.score = new Score(this.canvas.width / 2, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2);
+    this.score = new Score(this.canvas.width / 2, this.canvas.height / 16 * 15 - FallingBalls.TIPS_FONT_SIZE / 2);
 
     // 计时器
-    if (MODE === TIME_LIMITED) {
-        this.timer = new Timer(this.canvas.width - TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2, TIME_LIMITED_TARGET);
+    if (FallingBalls.MODE === FallingBalls.TIME_LIMITED) {
+        this.timer = new Timer(this.canvas.width - FallingBalls.TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - FallingBalls.TIPS_FONT_SIZE / 2, FallingBalls.TIME_LIMITED_TARGET);
     } else {
-        this.timer = new Timer(this.canvas.width - TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2, 0);
+        this.timer = new Timer(this.canvas.width - FallingBalls.TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - FallingBalls.TIPS_FONT_SIZE / 2, 0);
     }
 
     // 篮子相关
     this.basket = null;                 // 篮子对象
-    this.direction = MOVE_CODE.STOP;    // 方向
+    this.direction = FallingBalls.MOVE_CODE.STOP;    // 方向
     this.moveFlag = false;              // 篮子移动标志
     this.speed = 0;                     // 篮子移动速度
     this.pressKey = null;               // 按键
@@ -170,7 +170,7 @@ AnimationScene.prototype.init = function () {
     this.addWalls();
     this.addField();
     this.addLine();
-    this.addBasket(this.hcanvasWidth - BASKET_LENGTH / 2, BASKET_LENGTH);
+    this.addBasket(this.hcanvasWidth - FallingBalls.BASKET_LENGTH / 2, FallingBalls.BASKET_LENGTH);
     this.addBall();
 
     var that = this;
@@ -180,7 +180,7 @@ AnimationScene.prototype.init = function () {
     }, 2000);
     this.intervalIds.push(intervalId);
 
-    if (MODE === TIME_LIMITED) {
+    if (FallingBalls.MODE === FallingBalls.TIME_LIMITED) {
         intervalId = setInterval(function () {
             that.timer.downgradeValue();
         }, 1000);
@@ -264,7 +264,7 @@ AnimationScene.prototype.draw = function () {
     this.score.draw(ctx);   // 绘制分数
     this.timer.draw(ctx);   // 绘制计时器
 
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         this.ctx.save();
         this.ctx.scale(this.scaledRatio, this.scaledRatio);
         // 绘制按钮
@@ -276,15 +276,15 @@ AnimationScene.prototype.draw = function () {
 
     // 游戏结束的处理
     var result = {};
-    if (MODE === TIME_LIMITED) {
+    if (FallingBalls.MODE === FallingBalls.TIME_LIMITED) {
         if (this.timer.getValue() === 0) {
-            result["type"] = TIME_LIMITED;
+            result["type"] = FallingBalls.TIME_LIMITED;
             result["score"] = this.score.getValue();
             gameDirector.runScene(new EndScene(gameDirector.canvas), result);
         }
-    } else if (MODE === SCORE_LIMITED) {
-        if (this.score.getValue() === SCORE_LIMITED_TARGET) {
-            result["type"] = SCORE_LIMITED;
+    } else if (FallingBalls.MODE === FallingBalls.SCORE_LIMITED) {
+        if (this.score.getValue() === FallingBalls.SCORE_LIMITED_TARGET) {
+            result["type"] = FallingBalls.SCORE_LIMITED;
             result["score"] = this.timer.getValue();
             gameDirector.runScene(new EndScene(gameDirector.canvas), result);
         }
@@ -357,7 +357,7 @@ AnimationScene.prototype.destroy = function () {
 
     this.stop();
 
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("DESTROYED");
     }
 };
@@ -393,7 +393,7 @@ AnimationScene.prototype.resize = function () {
     var scaleX = this.canvas.width / oldCanvasWidth;
     var scaleY = this.canvas.height / oldCanvasHeight;
 
-    this.addBasket(startX * scaleX, BASKET_LENGTH);
+    this.addBasket(startX * scaleX, FallingBalls.BASKET_LENGTH);
 
     this.space.eachBody(function (body) {
         var oldPos = body.getPos();
@@ -401,8 +401,8 @@ AnimationScene.prototype.resize = function () {
     });
 
     // 重绘分数和时间
-    this.score.resize(this.canvas.width / 2, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2);
-    this.timer.resize(this.canvas.width - TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2);
+    this.score.resize(this.canvas.width / 2, this.canvas.height / 16 * 15 - FallingBalls.TIPS_FONT_SIZE / 2);
+    this.timer.resize(this.canvas.width - FallingBalls.TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - FallingBalls.TIPS_FONT_SIZE / 2);
 
     // 修改按钮尺寸
     this.leftBtn.resize(0, this.scaledCanvasHeight / 16 * 13, this.scaledHcanvasWidth, this.scaledCanvasHeight / 16 * 3, this.scaledRatio);
@@ -490,15 +490,15 @@ AnimationScene.prototype.setSpace = function () {
 };
 
 AnimationScene.prototype.addField = function () {
-    var radius = PIN_RADIUS;
-    var strike_x = PIN_RADIUS * 2 + BALL_RADIUS * 3;
+    var radius = FallingBalls.PIN_RADIUS;
+    var strike_x = FallingBalls.PIN_RADIUS * 2 + FallingBalls.BALL_RADIUS * 3;
     var strike_y = strike_x * 0.5 * Math.tan(Math.PI / 3);
 
     var first_row_y = this.canvas.height / 8 * 7;
     var last_row_y = this.canvas.height / 8 * 3;
     var num_row = (first_row_y - last_row_y) / strike_y;
 
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("ROW_NUM", num_row);
     }
 
@@ -541,7 +541,7 @@ AnimationScene.prototype.addLine = function () {
 };
 
 AnimationScene.prototype.addBasket = function (startX, length) {
-    this.basket = this.space.addShape(new cp.SegmentShape(this.space.staticBody, v(startX, this.canvas.height / 16 * 3), v(startX + length, this.canvas.height / 16 * 3), PIN_RADIUS));
+    this.basket = this.space.addShape(new cp.SegmentShape(this.space.staticBody, v(startX, this.canvas.height / 16 * 3), v(startX + length, this.canvas.height / 16 * 3), FallingBalls.PIN_RADIUS));
     this.basket.setElasticity(0);
     this.basket.setFriction(0);
     this.basket.setLayers(NOT_GRABABLE_MASK);
@@ -555,7 +555,7 @@ AnimationScene.prototype.addBasket = function (startX, length) {
 
 AnimationScene.prototype.addBall = function () {
     var space = this.space;
-    var radius = BALL_RADIUS;
+    var radius = FallingBalls.BALL_RADIUS;
     var mass = 3;
     var body = space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, v(0, 0))));
     var posX = radius + (this.canvas.width - radius * 2) * Math.random();
@@ -564,7 +564,7 @@ AnimationScene.prototype.addBall = function () {
     body.setVel(v(0, 0));
 
     var circle = space.addShape(new cp.CircleShape(body, radius, v(0, 0)));
-    circle.setElasticity(BALL_ELASTIC);
+    circle.setElasticity(FallingBalls.BALL_ELASTIC);
     circle.setFriction(0);
     circle.setCollisionType(COLLISION_TYPE.BALL);
 
@@ -591,16 +591,16 @@ AnimationScene.prototype.onPlayerKeyDown = function (e) {
         case 65:
         case 37:
             this.pressKey = keyID;
-            this.setMovingStatus(MOVE_CODE.LEFT);
-            if (IS_DEBUG_MODE) {
+            this.setMovingStatus(FallingBalls.MOVE_CODE.LEFT);
+            if (FallingBalls.IS_DEBUG_MODE) {
                 console.log("KEY DOWN", "LEFT");
             }
             break;
         case 68:
         case 39:
             this.pressKey = keyID;
-            this.setMovingStatus(MOVE_CODE.RIGHT);
-            if (IS_DEBUG_MODE) {
+            this.setMovingStatus(FallingBalls.MOVE_CODE.RIGHT);
+            if (FallingBalls.IS_DEBUG_MODE) {
                 console.log("KEY DOWN", "RIGHT");
             }
             break;
@@ -614,14 +614,14 @@ AnimationScene.prototype.onPlayerKeyUp = function (e) {
             case 65:
             case 37:
                 this.setStopStatus();
-                if (IS_DEBUG_MODE) {
+                if (FallingBalls.IS_DEBUG_MODE) {
                     console.log("KEY UP", "LEFT");
                 }
                 break;
             case 68:
             case 39:
                 this.setStopStatus();
-                if (IS_DEBUG_MODE) {
+                if (FallingBalls.IS_DEBUG_MODE) {
                     console.log("KEY UP", "RIGHT");
                 }
                 break;
@@ -631,37 +631,37 @@ AnimationScene.prototype.onPlayerKeyUp = function (e) {
 
 AnimationScene.prototype.onPlayerTouchStartLeft = function () {
     this.pressKey = 65;
-    this.setMovingStatus(MOVE_CODE.LEFT);
-    if (IS_DEBUG_MODE) {
+    this.setMovingStatus(FallingBalls.MOVE_CODE.LEFT);
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("TOUCH START", "LEFT");
     }
 };
 
 AnimationScene.prototype.onPlayerTouchStartRight = function () {
     this.pressKey = 68;
-    this.setMovingStatus(MOVE_CODE.RIGHT);
-    if (IS_DEBUG_MODE) {
+    this.setMovingStatus(FallingBalls.MOVE_CODE.RIGHT);
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("TOUCH START", "RIGHT");
     }
 };
 
 AnimationScene.prototype.onPlayerTouchEndLeft = function () {
     this.setStopStatus();
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("TOUCH END", "LEFT");
     }
 };
 
 AnimationScene.prototype.onPlayerTouchEndRight = function () {
     this.setStopStatus();
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("TOUCH END", "RIGHT");
     }
 };
 
 AnimationScene.prototype.setMovingStatus = function (direction) {
     this.moveFlag = true;
-    this.speed = BASKET_VELOCITY_MAX;
+    this.speed = FallingBalls.BASKET_VELOCITY_MAX;
     this.direction = direction;
 };
 
@@ -682,25 +682,25 @@ AnimationScene.prototype.moveBracket = function () {
     var end = this.basket.b;
     var needsReindex = false;
 
-    if (this.direction === MOVE_CODE.RIGHT) {
+    if (this.direction === FallingBalls.MOVE_CODE.RIGHT) {
         start = v.add(start, v(this.speed, 0));
         end = v.add(end, v(this.speed, 0));
         needsReindex = true;
-    } else if (this.direction === MOVE_CODE.LEFT) {
+    } else if (this.direction === FallingBalls.MOVE_CODE.LEFT) {
         start = v.sub(start, v(this.speed, 0));
         end = v.sub(end, v(this.speed, 0));
         needsReindex = true;
     }
 
-    if (start.x < PIN_RADIUS) {
+    if (start.x < FallingBalls.PIN_RADIUS) {
         this.speed = 0;
-        start.x = PIN_RADIUS;
-        end.x = PIN_RADIUS + BASKET_LENGTH;
+        start.x = FallingBalls.PIN_RADIUS;
+        end.x = FallingBalls.PIN_RADIUS + FallingBalls.BASKET_LENGTH;
         needsReindex = true;
-    } else if (end.x > this.canvas.width - PIN_RADIUS) {
+    } else if (end.x > this.canvas.width - FallingBalls.PIN_RADIUS) {
         this.speed = 0;
-        end.x = this.canvas.width - PIN_RADIUS;
-        start.x = end.x - BASKET_LENGTH;
+        end.x = this.canvas.width - FallingBalls.PIN_RADIUS;
+        start.x = end.x - FallingBalls.BASKET_LENGTH;
         needsReindex = true;
     }
 

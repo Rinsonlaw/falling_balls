@@ -71,7 +71,7 @@ EndScene.prototype.init = function () {
 
     // 动态生成提示文字装载框
     var $body = $("body");
-    if ($body.find("#snackbar-container").length == 0) {
+    if ($body.find("#snackbar-container").length === 0) {
         $("<div>", {
                 id: "snackbar-container"
             }
@@ -83,10 +83,10 @@ EndScene.prototype.start = function (result) {
     this.init();
 
     this.result = result;
-    if (arguments.length == 1) {
-        if (result["type"] == TIME_LIMITED) {
+    if (arguments.length === 1) {
+        if (result["type"] === FallingBalls.TIME_LIMITED) {
             this.resultStr = result["score"].toString(10);
-        } else if (result["type"] == SCORE_LIMITED) {
+        } else if (result["type"] === FallingBalls.SCORE_LIMITED) {
             this.resultStr = result["score"].toString(10);
         }
     }
@@ -106,11 +106,11 @@ EndScene.prototype.draw = function () {
     this.ctx.textBaseline = "middle";
     this.ctx.textAlign = "center";
     this.ctx.fillText(this.resultStr, this.scaledHcanvasWidth, this.scaledHcanvasHeight / 2);
-    if (this.result["type"] == TIME_LIMITED) {
+    if (this.result["type"] === FallingBalls.TIME_LIMITED) {
         this.ctx.fillText("You Got", this.scaledHcanvasWidth, this.scaledHcanvasHeight / 2 - 120);
         this.ctx.fillText("Points", this.scaledHcanvasWidth, this.scaledHcanvasHeight / 2 + 120);
     }
-    if (this.result["type"] == SCORE_LIMITED) {
+    if (this.result["type"] === FallingBalls.SCORE_LIMITED) {
         this.ctx.fillText("You Spent", this.scaledHcanvasWidth, this.scaledHcanvasHeight / 2 - 120);
         this.ctx.fillText("Seconds", this.scaledHcanvasWidth, this.scaledHcanvasHeight / 2 + 120);
     }
@@ -143,7 +143,7 @@ EndScene.prototype.destroy = function () {
 
     window.cancelAnimationFrame(this.requestID);
 
-    if (IS_DEBUG_MODE) {
+    if (FallingBalls.IS_DEBUG_MODE) {
         console.log("DESTROY:" + this.requestID);
     }
 };
@@ -161,7 +161,7 @@ EndScene.prototype.branchToMenu = function () {
     this.audioArray['touchBtn'].play();
     gameDirector.runScene(new StartScene(this.canvas));
 
-    if (IS_DEBUG_MODE){
+    if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED MENU");
     }
 };
@@ -171,7 +171,7 @@ EndScene.prototype.branchToShare = function () {
 
     // 动态生成提示框（同时只允许一个框出现）
     var $container = $("#snackbar-container");
-    if ($container.find(".snackbar").length == 0) {
+    if ($container.find(".snackbar").length === 0) {
 
         var snackbar = $("<div>", {
             class: "snackbar",
@@ -193,7 +193,7 @@ EndScene.prototype.branchToShare = function () {
         }, 2000);
     }
 
-    if (IS_DEBUG_MODE){
+    if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED MENU");
     }
 };
@@ -202,7 +202,7 @@ EndScene.prototype.branchToPlay = function () {
     this.audioArray['touchBtn'].play();
     gameDirector.runScene(new AnimationScene(this.canvas));
 
-    if (IS_DEBUG_MODE){
+    if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED PLAY");
     }
 };
