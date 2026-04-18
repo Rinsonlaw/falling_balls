@@ -1,6 +1,3 @@
-// 球的颜色
-var fillSytles = ["#ff5722", "#aaaaaa", "#F44336", "#607D8B", "#FFC107", "#795548", "#4CAF50"];
-
 /**
  * SoundPool 音频节点池
  * 复用音频节点，避免每次播放都克隆导致内存泄漏
@@ -158,6 +155,14 @@ var AnimationScene = function (canvas) {
     // 数秒定时器
     this.intervalIds = [];
 
+    // 优化5: 离屏 canvas 预渲染静态元素
+    this.staticCanvas = document.createElement('canvas');
+    this.staticCtx = null;
+
+    // 优化2: 球对象池
+    this.ballPool = [];
+    this.ballPoolSize = 10;
+    this.activeBalls = [];  // 活跃的球
 };
 
 AnimationScene.prototype = Object.create(Scene.prototype);
@@ -166,17 +171,29 @@ AnimationScene.prototype.constructor = AnimationScene;
 AnimationScene.prototype.init = function () {
     setBoundary(this.getShortEdge());
 
+    // 初始化离屏 canvas
+    this.staticCanvas.width = this.canvas.width;
+    this.staticCanvas.height = this.canvas.height;
+    this.staticCtx = this.staticCanvas.getContext('2d');
+
+    // 初始化球对象池
+    this.initBallPool();
+
     this.setSpace();
     this.addWalls();
     this.addField();
     this.addLine();
     this.addBasket(this.hcanvasWidth - FallingBalls.BASKET_LENGTH / 2, FallingBalls.BASKET_LENGTH);
-    this.addBall();
+
+    // 预渲染静态元素
+    this.renderStaticElements();
+
+    this.spawnBall();
 
     var that = this;
     var intervalId;
     intervalId = setInterval(function () {
-        that.addBall();
+        that.spawnBall();
     }, 2000);
     this.intervalIds.push(intervalId);
 
@@ -217,49 +234,63 @@ AnimationScene.prototype.start = function () {
 };
 
 AnimationScene.prototype.draw = function () {
-    var self = this;
-
     var ctx = this.ctx;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.font = "16px sans-serif";
     this.ctx.lineCap = 'round';
 
+    // 优化5: 绘制预渲染的静态元素
+    ctx.drawImage(this.staticCanvas, 0, 0);
+
     this.moveBracket();     // 移动挡板
 
-    var space = this.space;
+    // 绘制篮筐（动态更新）
+    if (this.basket && this.basket.style) {
+        ctx.fillStyle = this.basket.style.toRgbaStr();
+        ctx.strokeStyle = this.basket.style.toRgbaStr();
+        this.basket.draw(ctx, this.scale, this.point2canvas);
+    }
 
-    space.eachShape(function (shape) {
+    // 优化3+4: 只遍历活跃的球，带屏幕剔除
+    var canvasHeight = this.canvas.height;
+    var ballRadius = FallingBalls.BALL_RADIUS;
 
-        if (shape.style) {
-            ctx.fillStyle = shape.style.toRgbaStr();
-            ctx.strokeStyle = shape.style.toRgbaStr();
+    for (var i = 0; i < this.activeBalls.length; i++) {
+        var ballData = this.activeBalls[i];
+        var shape = ballData.shape;
 
-            // 生成球时，淡入透明度
-            if (shape.isBorn === true) {
-                if (shape.style.a >= 1) {
-                    shape.isBorn = false;
-                } else {
-                    shape.style.a += 0.02;
-                }
-            }
+        // 优化4: 屏幕剔除 - 跳过屏幕外的球
+        var pos = shape.body.getPos();
+        if (pos.y < -ballRadius * 2 || pos.y > canvasHeight + ballRadius * 2) {
+            continue;
+        }
 
-            // 销毁球时，淡出透明度
-            if (shape.isDead === true) {
-                if (shape.style.a <= 0) {
+        // 优化1: 缓存颜色字符串（通过 shape.style 提供）
+        ctx.fillStyle = shape.style.toRgbaStr();
+        ctx.strokeStyle = shape.style.toRgbaStr();
 
-                    // 透明度为0时，销毁球
-                    space.addPostStepCallback(function () {
-                        space.removeShape(shape);
-                        space.removeBody(shape.body);
-                    });
-                } else {
-                    shape.style.a -= 0.2;
-                }
+        // 生成球时，淡入透明度
+        if (shape.isBorn === true) {
+            if (shape.style.a >= 1) {
+                shape.isBorn = false;
+            } else {
+                shape.style.a += 0.02;
             }
         }
 
-        shape.draw(ctx, self.scale, self.point2canvas);
-    });
+        // 销毁球时，淡出透明度
+        if (shape.isDead === true) {
+            if (shape.style.a <= 0) {
+                // 透明度为0时，回收到对象池
+                this.releaseBall(ballData);
+                continue;
+            } else {
+                shape.style.a -= 0.2;
+            }
+        }
+
+        shape.draw(ctx, this.scale, this.point2canvas);
+    }
 
     this.score.draw(ctx);   // 绘制分数
     this.timer.draw(ctx);   // 绘制计时器
@@ -553,27 +584,95 @@ AnimationScene.prototype.addBasket = function (startX, length) {
     this.basket.style = color;
 };
 
-AnimationScene.prototype.addBall = function () {
-    var space = this.space;
+AnimationScene.prototype.initBallPool = function () {
     var radius = FallingBalls.BALL_RADIUS;
     var mass = 3;
-    var body = space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, v(0, 0))));
+
+    for (var i = 0; i < this.ballPoolSize; i++) {
+        var body = new cp.Body(mass, cp.momentForCircle(mass, 0, radius, v(0, 0)));
+        var circle = new cp.CircleShape(body, radius, v(0, 0));
+        circle.setElasticity(FallingBalls.BALL_ELASTIC);
+        circle.setFriction(0);
+        circle.setCollisionType(COLLISION_TYPE.BALL);
+
+        var color = new Color();
+        color.initWithHex(FallingBalls.BALL_COLORS[i % FallingBalls.BALL_COLORS.length], 0);
+        circle.style = color;
+
+        this.ballPool.push({
+            body: body,
+            shape: circle,
+            active: false
+        });
+    }
+};
+
+AnimationScene.prototype.spawnBall = function () {
+    // 优化2: 优先从对象池获取
+    var ballData = null;
+
+    for (var i = 0; i < this.ballPool.length; i++) {
+        if (!this.ballPool[i].active) {
+            ballData = this.ballPool[i];
+            break;
+        }
+    }
+
+    if (!ballData) {
+        return; // 对象池已满
+    }
+
+    var radius = FallingBalls.BALL_RADIUS;
     var posX = radius + (this.canvas.width - radius * 2) * Math.random();
 
-    body.setPos(v(posX, this.canvas.height / 9 * 8));
-    body.setVel(v(0, 0));
+    ballData.body.setPos(v(posX, this.canvas.height / 9 * 8));
+    ballData.body.setVel(v(0, 0));
 
-    var circle = space.addShape(new cp.CircleShape(body, radius, v(0, 0)));
-    circle.setElasticity(FallingBalls.BALL_ELASTIC);
-    circle.setFriction(0);
-    circle.setCollisionType(COLLISION_TYPE.BALL);
+    ballData.shape.isBorn = true;
+    ballData.shape.isDead = false;
+    ballData.shape.style.a = 0;
+    ballData.active = true;
 
-    var color = new Color();
-    color.initWithHex(fillSytles[circle.hashid % fillSytles.length], 0);
-    circle.style = color;
+    this.space.addBody(ballData.body);
+    this.space.addShape(ballData.shape);
+    this.activeBalls.push(ballData);
+};
 
-    circle.isBorn = true;
-    circle.isDead = false;
+AnimationScene.prototype.releaseBall = function (ballData) {
+    ballData.active = false;
+    ballData.shape.isDead = false;
+    ballData.shape.isBorn = false;
+
+    this.space.removeBody(ballData.body);
+    this.space.removeShape(ballData.shape);
+
+    var idx = this.activeBalls.indexOf(ballData);
+    if (idx > -1) {
+        this.activeBalls.splice(idx, 1);
+    }
+};
+
+AnimationScene.prototype.renderStaticElements = function () {
+    // 优化5: 预渲染静态元素（墙、针、线）到离屏 canvas
+    var ctx = this.staticCtx;
+    var self = this;
+    ctx.clearRect(0, 0, this.staticCanvas.width, this.staticCanvas.height);
+    ctx.save();
+    ctx.scale(this.scale, this.scale);
+
+    this.space.eachShape(function (shape) {
+        if (shape.collision_type === COLLISION_TYPE.WALL ||
+            shape.collision_type === COLLISION_TYPE.PIN ||
+            shape.collision_type === COLLISION_TYPE.LINE) {
+            if (shape.style) {
+                ctx.fillStyle = shape.style.toRgbaStr();
+                ctx.strokeStyle = shape.style.toRgbaStr();
+            }
+            shape.draw(ctx, self.scale, self.point2canvas);
+        }
+    });
+
+    ctx.restore();
 };
 
 AnimationScene.prototype.canvas2point = function (x, y) {

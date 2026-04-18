@@ -32,6 +32,9 @@ FallingBalls.SCORE_LIMITED_TARGET = 100;
 FallingBalls.TIME_LIMITED_TARGET = 60;
 
 // 调试开关
-FallingBalls.IS_SHOW_FPS = false;
+FallingBalls.IS_SHOW_FPS = true;
 FallingBalls.IS_DEBUG_MODE = false;
 FallingBalls.REFERENCE_CANVAS_HEIGHT = 960;
+
+// 球的颜色
+FallingBalls.BALL_COLORS = ["#ff5722", "#aaaaaa", "#F44336", "#607D8B", "#FFC107", "#795548", "#4CAF50"];
