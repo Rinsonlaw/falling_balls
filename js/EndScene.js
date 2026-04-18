@@ -9,7 +9,6 @@ var EndScene = function (canvas) {
 
     // 多媒体对象
     this.imageArray = gameDirector.mediaObjects.image.content;
-    this.audioArray = gameDirector.mediaObjects.audio.content;
 
     // 游戏结果信息
     this.resultStr = "";
@@ -36,6 +35,15 @@ EndScene.prototype = Object.create(Scene.prototype);
 EndScene.prototype.constructor = EndScene;
 
 EndScene.prototype.init = function () {
+    // 初始化 Web Audio 上下文（需用户交互后调用）
+    initAudioContext();
+
+    // 音频节点池（基于 Web Audio API）
+    var buffers = gameDirector.audioBuffers || [];
+    // 顺序: touchBtn(0), bounce(1), goal(2), touchBuff(3), gameStart(4), gameOver(5)
+    this.soundPoolGameOver = new AudioPool(buffers[5], 1);
+    this.soundPoolTouchBtn = new AudioPool(buffers[0], 1);
+
     // 注册监听器
     this.canvas.addEventListener("touchend", this.bindOnTouchMenu);
     this.canvas.addEventListener("mouseup", this.bindOnMouseUpMenu);
@@ -67,7 +75,7 @@ EndScene.prototype.init = function () {
     this.playBtn.setImage(this.imageArray['replay']);
 
     // 播放游戏结束音频
-    this.audioArray['gameOver'].play();
+    this.soundPoolGameOver.play();
 
     // 动态生成提示文字装载框
     var $body = $("body");
@@ -158,7 +166,7 @@ EndScene.prototype.resize = function () {
 };
 
 EndScene.prototype.branchToMenu = function () {
-    this.audioArray['touchBtn'].play();
+    this.soundPoolTouchBtn.play();
     gameDirector.runScene(new StartScene(this.canvas));
 
     if (FallingBalls.IS_DEBUG_MODE){
@@ -167,7 +175,7 @@ EndScene.prototype.branchToMenu = function () {
 };
 
 EndScene.prototype.branchToShare = function () {
-    this.audioArray['touchBtn'].play();
+    this.soundPoolTouchBtn.play();
 
     // 动态生成提示框（同时只允许一个框出现）
     var $container = $("#snackbar-container");
@@ -199,7 +207,7 @@ EndScene.prototype.branchToShare = function () {
 };
 
 EndScene.prototype.branchToPlay = function () {
-    this.audioArray['touchBtn'].play();
+    this.soundPoolTouchBtn.play();
     gameDirector.runScene(new AnimationScene(this.canvas));
 
     if (FallingBalls.IS_DEBUG_MODE){
