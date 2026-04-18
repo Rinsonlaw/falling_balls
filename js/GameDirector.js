@@ -121,7 +121,9 @@ function resizeCanvas() {
     gameDirector.canvas.height = gameDirector.cssHeight * gameDirector.devicePixelRatio;
 
     // 调整场景及其游戏组件
-    gameDirector.currentScene.resize();
+    if (gameDirector.currentScene) {
+        gameDirector.currentScene.resize();
+    }
 }
 
 /**
@@ -130,7 +132,7 @@ function resizeCanvas() {
  * @returns {Number}    设备的devicePixelRatio
  */
 function getDevicePixelRatio() {
-    return (window.devicePixelRatio != undefined) ? window.devicePixelRatio : 1;
+    return (window.devicePixelRatio !== undefined) ? window.devicePixelRatio : 1;
 }
 
 /**
@@ -399,7 +401,7 @@ Button.prototype = {
      * 鼠标按下事件回调函数
      */
     onMouseDown: function () {
-        throw "NOT IMPLEMENT";
+        throw new Error("NOT IMPLEMENT: onMouseDown must be overridden");
     },
 
     /**
@@ -425,7 +427,7 @@ Button.prototype = {
      * 鼠标抬起事件回调函数
      */
     onMouseUp: function () {
-        throw "NOT IMPLEMENT";
+        throw new Error("NOT IMPLEMENT: onMouseUp must be overridden");
     },
 
     /**
@@ -452,7 +454,7 @@ Button.prototype = {
      * 触屏开始事件回调函数
      */
     onTouchStart: function () {
-        throw "NOT IMPLEMENT";
+        throw new Error("NOT IMPLEMENT: onTouchStart must be overridden");
     },
 
     /**
@@ -479,7 +481,7 @@ Button.prototype = {
      * 触屏结束事件回调函数
      */
     onTouchEnd: function () {
-        throw "NOT IMPLEMENT";
+        throw new Error("NOT IMPLEMENT: onTouchEnd must be overridden");
     }
 };
 

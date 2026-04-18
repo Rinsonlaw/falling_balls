@@ -33,8 +33,8 @@ var MediaPreloader = function () {
 
     this.mediaObjects = new MediaList();        //媒体对象
 
-    this.call_back_preload = new Function();    //储存预加载完成的回调函数
-    this.call_back_update = new Function();     //储存界面更新的回调函数
+    this.call_back_preload = function () {};    //储存预加载完成的回调函数
+    this.call_back_update = function () {};     //储存界面更新的回调函数
 };
 
 MediaPreloader.prototype = {
@@ -166,7 +166,7 @@ MediaPreloader.prototype = {
         this.nProcessed++;
         this.call_back_update(this.nLoaded);
 
-        if (this.nProcessed == this.nMedia) {
+        if (this.nProcessed === this.nMedia) {
             this.call_back_preload(this.mediaObjects, this.nLoaded);
         }
     },

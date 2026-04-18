@@ -134,7 +134,7 @@ var AnimationScene = function (canvas) {
     this.score = new Score(this.canvas.width / 2, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2);
 
     // 计时器
-    if (MODE == TIME_LIMITED) {
+    if (MODE === TIME_LIMITED) {
         this.timer = new Timer(this.canvas.width - TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2, TIME_LIMITED_TARGET);
     } else {
         this.timer = new Timer(this.canvas.width - TIPS_FONT_SIZE, this.canvas.height / 16 * 15 - TIPS_FONT_SIZE / 2, 0);
@@ -200,7 +200,7 @@ AnimationScene.prototype = {
         }, 2000);
         this.intervalIds.push(intervalId);
 
-        if (MODE == TIME_LIMITED) {
+        if (MODE === TIME_LIMITED) {
             intervalId = setInterval(function () {
                 that.timer.downgradeValue();
             }, 1000);
@@ -253,7 +253,6 @@ AnimationScene.prototype = {
         this.moveBracket();     // 移动挡板
 
         var space = this.space;
-        space.reindexStatic();  // 绘制挡板
 
         space.eachShape(function (shape) {
 
@@ -303,14 +302,14 @@ AnimationScene.prototype = {
 
         // 游戏结束的处理
         var result = {};
-        if (MODE == TIME_LIMITED) {
-            if (this.timer.getValue() == 0) {
+        if (MODE === TIME_LIMITED) {
+            if (this.timer.getValue() === 0) {
                 result["type"] = TIME_LIMITED;
                 result["score"] = this.score.getValue();
                 gameDirector.runScene(new EndScene(gameDirector.canvas), result);
             }
-        } else if (MODE == SCORE_LIMITED) {
-            if (this.score.getValue() == SCORE_LIMITED_TARGET) {
+        } else if (MODE === SCORE_LIMITED) {
+            if (this.score.getValue() === SCORE_LIMITED_TARGET) {
                 result["type"] = SCORE_LIMITED;
                 result["score"] = this.timer.getValue();
                 gameDirector.runScene(new EndScene(gameDirector.canvas), result);
@@ -532,12 +531,7 @@ AnimationScene.prototype = {
         // 球与挡板移动线的碰撞处理
         space.addCollisionHandler(COLLISION_TYPE.BALL, COLLISION_TYPE.LINE, null, null, function (arbiter, space) {
                 var shapes = arbiter.getShapes();
-
                 var shapeA = shapes[0];
-                var shapeB = shapes[1];
-
-                var collTypeA = shapeA.collision_type;
-                var collTypeB = shapeB.collision_type;
 
                 if (shapeA.isDead === false) {
                     that.soundPoolGoal.play();
@@ -555,19 +549,12 @@ AnimationScene.prototype = {
         // 球与挡板的碰撞处理
         space.addCollisionHandler(COLLISION_TYPE.BALL, COLLISION_TYPE.BASKET, null, null, function (arbiter, space) {
                 var shapes = arbiter.getShapes();
-
                 var shapeA = shapes[0];
-                var shapeB = shapes[1];
-
-                var collTypeA = shapeA.collision_type;
-                var collTypeB = shapeB.collision_type;
 
                 if (shapeA.isDead === false) {
                     that.soundPoolTouchBuff.play();
                     that.score.updateValue();
                 }
-
-                // console.log(that.score);
 
                 if (shapeA.isBorn === false) {
                     shapeA.isDead = true;
@@ -808,47 +795,53 @@ AnimationScene.prototype = {
      * 移动挡板
      */
     moveBracket: function () {
+        if (!this.basket) {
+            return;
+        }
+
         if (!this.moveFlag) {
             this.speed *= 0.9;
         }
 
         var start = this.basket.a;
         var end = this.basket.b;
-        if (this.direction == MOVE_CODE.RIGHT) {
+        var needsReindex = false;
+
+        if (this.direction === MOVE_CODE.RIGHT) {
             start = v.add(start, v(this.speed, 0));
             end = v.add(end, v(this.speed, 0));
-        } else if (this.direction == MOVE_CODE.LEFT) {
+            needsReindex = true;
+        } else if (this.direction === MOVE_CODE.LEFT) {
             start = v.sub(start, v(this.speed, 0));
             end = v.sub(end, v(this.speed, 0));
+            needsReindex = true;
         }
 
         if (start.x < PIN_RADIUS) {
             this.speed = 0;
             start.x = PIN_RADIUS;
             end.x = PIN_RADIUS + BASKET_LENGTH;
+            needsReindex = true;
         } else if (end.x > this.canvas.width - PIN_RADIUS) {
             this.speed = 0;
             end.x = this.canvas.width - PIN_RADIUS;
             start.x = end.x - BASKET_LENGTH;
+            needsReindex = true;
         }
 
-        this.basket.setEndpoints(start, end);
+        if (needsReindex) {
+            this.basket.setEndpoints(start, end);
+            this.space.reindexStatic();
+        }
     }
 };
 
 /**
  * 设置请求帧
  *
- * @type {*|Function} 请求帧函数
+ * @type {Function} 请求帧函数
  */
-var raf = window.requestAnimationFrame
-    || window.webkitRequestAnimationFrame
-    || window.mozRequestAnimationFrame
-    || window.oRequestAnimationFrame
-    || window.msRequestAnimationFrame
-    || function (callback) {
-        return window.setTimeout(callback, 1000 / 60);
-    };
+var raf = window.requestAnimationFrame.bind(window);
 
 
 // 绘图辅助函数
