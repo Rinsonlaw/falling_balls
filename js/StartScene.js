@@ -9,7 +9,6 @@ var StartScene = function (canvas) {
 
     // 多媒体对象
     this.imageArray = gameDirector.mediaObjects.image.content;
-    this.audioArray = gameDirector.mediaObjects.audio.content;
 
     // 按钮
     this.leftBtn = new Button(this.scaledHcanvasWidth - 180, this.scaledHcanvasHeight - 50, 400, 100, this.scaledRatio);
@@ -27,6 +26,13 @@ StartScene.prototype = Object.create(Scene.prototype);
 StartScene.prototype.constructor = StartScene;
 
 StartScene.prototype.init = function () {
+    // 初始化 Web Audio 上下文（需用户交互后调用）
+    initAudioContext();
+
+    // 音频节点池（基于 Web Audio API）
+    var buffers = gameDirector.audioBuffers || [];
+    this.soundPoolTouchBtn = new AudioPool(buffers[0], 1);
+
     // 注册监听器
     this.canvas.addEventListener("touchend", this.bindOnTouchEndLeft);
     this.canvas.addEventListener("mouseup", this.bindOnMouseUpLeft);
@@ -102,7 +108,7 @@ StartScene.prototype.resize = function () {
 };
 
 StartScene.prototype.changePlayerMode = function () {
-    this.audioArray['touchBtn'].play();
+    this.soundPoolTouchBtn.play();
     FallingBalls.MODE = FallingBalls.TIME_LIMITED;
 
     gameDirector.runScene(new AnimationScene(this.canvas));
@@ -112,7 +118,7 @@ StartScene.prototype.changePlayerMode = function () {
 };
 
 StartScene.prototype.changeGroundMode = function () {
-    this.audioArray['touchBtn'].play();
+    this.soundPoolTouchBtn.play();
     FallingBalls.MODE = FallingBalls.SCORE_LIMITED;
 
     gameDirector.runScene(new AnimationScene(this.canvas));

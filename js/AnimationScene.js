@@ -2,8 +2,8 @@
  * AudioPool 基于 Web Audio API 的音频池
  * 预解码音频，无播放延迟和 CPU 解码开销
  *
- * @param {Array}  audioBuffers  预解码的 AudioBuffer 数组
- * @param {Number} poolSize       池大小
+ * @param {AudioBuffer} audioBuffer  预解码的 AudioBuffer
+ * @param {Number}      poolSize    池大小
  * @constructor
  */
 var AudioPool = function (audioBuffer, poolSize) {

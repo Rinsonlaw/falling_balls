@@ -139,16 +139,19 @@ function setBoundary(reference) {
 /**
  * 显示帧率显示器
  */
+var statsInstance = null;
 function showFPS() {
-    var stats = new Stats();
-    stats.setMode(0); // 0: fps, 1: ms, 2: mb
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.left = '0px';
-    stats.domElement.style.top = '0px';
-    document.body.appendChild(stats.domElement);
+    if (statsInstance) return; // 避免重复创建
+
+    statsInstance = new Stats();
+    statsInstance.setMode(0); // 0: fps, 1: ms, 2: mb
+    statsInstance.domElement.style.position = 'absolute';
+    statsInstance.domElement.style.left = '0px';
+    statsInstance.domElement.style.top = '0px';
+    document.body.appendChild(statsInstance.domElement);
 
     function drawFPS() {
-        stats.update();
+        statsInstance.update();
         window.requestAnimationFrame(drawFPS);
     }
 
