@@ -36,13 +36,11 @@ EndScene.prototype.constructor = EndScene;
 
 EndScene.prototype.init = function () {
     // 初始化 Web Audio 上下文（需用户交互后调用）
-    initAudioContext();
+    gameDirector.audioManager.initContext();
 
     // 音频节点池（基于 Web Audio API）
-    var buffers = gameDirector.audioBuffers || [];
-    // 顺序: touchBtn(0), bounce(1), goal(2), touchBuff(3), gameStart(4), gameOver(5)
-    this.soundPoolGameOver = new AudioPool(buffers[5], 1);
-    this.soundPoolTouchBtn = new AudioPool(buffers[0], 1);
+    this.soundPoolGameOver = gameDirector.audioManager.createPool(AudioManager.AUDIO_GAME_OVER, 1);
+    this.soundPoolTouchBtn = gameDirector.audioManager.createPool(AudioManager.AUDIO_TOUCH_BTN, 1);
 
     // 注册监听器
     this.canvas.addEventListener("touchend", this.bindOnTouchMenu);

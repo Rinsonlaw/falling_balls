@@ -1,136 +1,3 @@
-/**
- * AudioPool 基于 Web Audio API 的音频池
- * 预解码音频，无播放延迟和 CPU 解码开销
- *
- * @param {AudioBuffer} audioBuffer  预解码的 AudioBuffer
- * @param {Number}      poolSize    池大小
- * @constructor
- */
-var AudioPool = function (audioBuffer, poolSize) {
-    this.buffer = audioBuffer;
-    this.poolSize = poolSize || 4;
-    this.pool = [];
-
-    // 复用节点
-    for (var i = 0; i < this.poolSize; i++) {
-        this.pool.push({
-            source: null,
-            isPlaying: false
-        });
-    }
-};
-
-AudioPool.prototype = {
-    constructor: AudioPool,
-
-    /**
-     * 播放音频
-     *
-     * @param {Number} volume  音量 (0-1)
-     */
-    play: function (volume) {
-        volume = volume !== undefined ? volume : 1.0;
-
-        if (!this.buffer) return;
-
-        // 找一个空闲的节点
-        for (var i = 0; i < this.pool.length; i++) {
-            if (!this.pool[i].isPlaying) {
-                this._playNode(this.pool[i], volume);
-                return;
-            }
-        }
-
-        // 全部占用，覆盖第一个
-        this._playNode(this.pool[0], volume);
-    },
-
-    _playNode: function (node, volume) {
-        if (!audioContext || !this.buffer) {
-            return;
-        }
-
-        // 停止之前的播放
-        if (node.source) {
-            try {
-                node.source.stop();
-            } catch (e) {}
-        }
-
-        node.source = audioContext.createBufferSource();
-        node.source.buffer = this.buffer;
-
-        var gainNode = audioContext.createGain();
-        gainNode.gain.value = volume;
-
-        node.source.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        node.isPlaying = true;
-        node.source.start();
-
-        node.source.onended = function () {
-            node.isPlaying = false;
-        };
-    }
-};
-
-// Web Audio API 全局上下文
-var audioContext = null;
-
-/**
- * 初始化 Web Audio API 上下文（需用户交互后调用）
- */
-function initAudioContext() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    return audioContext;
-}
-
-/**
- * 预解码音频文件为 AudioBuffer
- *
- * @param {Array}   audioSrcList  音频 URL 数组
- * @param {Function} onComplete   全部解码完成回调
- * @param {Function} onProgress   进度回调
- */
-function decodeAudioFiles(audioSrcList, onComplete, onProgress) {
-    var buffers = [];
-    var loaded = 0;
-
-    audioSrcList.forEach(function (src) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', src, true);
-        xhr.responseType = 'arraybuffer';
-
-        xhr.onload = function () {
-            audioContext.decodeAudioData(xhr.response, function (buffer) {
-                buffers.push(buffer);
-                loaded++;
-                if (onProgress) {
-                    onProgress(loaded, audioSrcList.length);
-                }
-                if (loaded === audioSrcList.length && onComplete) {
-                    onComplete(buffers);
-                }
-            }, function (e) {
-                console.error('Decode error:', src, e);
-                buffers.push(null);
-                loaded++;
-            });
-        };
-
-        xhr.onerror = function (e) {
-            console.error('Load error:', src, e);
-            buffers.push(null);
-            loaded++;
-        };
-
-        xhr.send();
-    });
-}
-
 // 物理引擎相关
 var v = cp.v;   // vector类
 var GRABABLE_MASK_BIT = 1 << 31;
@@ -156,15 +23,13 @@ var AnimationScene = function (canvas) {
 
     // 多媒体对象
     this.imageArray = gameDirector.mediaObjects.image.content;
-    this.audioArray = gameDirector.mediaObjects.audio.content;
 
-    // 音频节点池（基于 Web Audio API 预解码 Buffer）
-    // 顺序: touchBtn(0), bounce(1), goal(2), touchBuff(3), gameStart(4), gameOver(5)
-    var buffers = gameDirector.audioBuffers || [];
-    this.soundPoolBounce = new AudioPool(buffers[1], 4);
-    this.soundPoolGoal = new AudioPool(buffers[2], 4);
-    this.soundPoolTouchBuff = new AudioPool(buffers[3], 4);
-    this.soundPoolGameStart = new AudioPool(buffers[4], 1);
+    // 音频节点池（基于 Web Audio API）
+    var audioMgr = gameDirector.audioManager;
+    this.soundPoolBounce = audioMgr.createPool(AudioManager.AUDIO_BOUNCE, 4);
+    this.soundPoolGoal = audioMgr.createPool(AudioManager.AUDIO_GOAL, 4);
+    this.soundPoolTouchBuff = audioMgr.createPool(AudioManager.AUDIO_TOUCH_BUFF, 4);
+    this.soundPoolGameStart = audioMgr.createPool(AudioManager.AUDIO_GAME_START, 1);
 
     // 游戏控制相关
     this.space = new cp.Space();    // 重力空间
@@ -287,7 +152,7 @@ AnimationScene.prototype.init = function () {
     this.canvas.addEventListener("touchend", this.bindOnTouchEndRight);
 
     // 初始化 Web Audio 上下文（需用户交互后调用）
-    initAudioContext();
+    gameDirector.audioManager.initContext();
 
     // 播放游戏开始音频
     this.soundPoolGameStart.play();

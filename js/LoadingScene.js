@@ -53,8 +53,7 @@ LoadingScene.prototype.init = function () {
         gameDirector.mediaObjects = mediaObjects;
 
         // 预解码音频为 Web Audio API Buffer
-        that.decodeAudioBuffers(mediaObjects, function (buffers) {
-            gameDirector.audioBuffers = buffers;
+        gameDirector.audioManager.decodeAudioBuffers(mediaObjects, function () {
             that.branchToMenu();
         });
     });
@@ -130,77 +129,6 @@ LoadingScene.prototype.drawProgressBar = function () {
     this.ctx.fillStyle = "rgba(255,193,7,1)";
     this.ctx.fillRect(this.scaledHcanvasWidth - this.progressBarWidth / 2,
         this.scaledHcanvasHeight + 90, this.progressBarWidth * ratio, this.progressBarHeight);
-};
-
-LoadingScene.prototype.decodeAudioBuffers = function (mediaObjects, onComplete) {
-    var audioContent = mediaObjects.audio.content;
-    var audioNames = Object.keys(audioContent);
-    var buffers = [];
-
-    // 初始化 AudioContext
-    if (!window.audioContext) {
-        window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    var audioCtx = window.audioContext;
-
-    if (audioNames.length === 0) {
-        onComplete(buffers);
-        return;
-    }
-
-    // 将相对 URL 转换为绝对 URL
-    function resolveUrl(relativeUrl) {
-        if (relativeUrl.startsWith('http://') || relativeUrl.startsWith('https://') || relativeUrl.startsWith('//')) {
-            return relativeUrl;
-        }
-        return new URL(relativeUrl, window.location.href).href;
-    }
-
-    // 使用 Promise.all 并行解码所有音频
-    var promises = audioNames.map(function (name) {
-        var audioEl = audioContent[name];
-        // 优先从 source 子元素获取 src，其次尝试 audioEl.src/currentSrc
-        var src = audioEl.src || audioEl.currentSrc;
-        if (!src && audioEl.querySelector) {
-            var sourceEl = audioEl.querySelector('source');
-            if (sourceEl) {
-                src = sourceEl.src;
-            }
-        }
-        if (!src) {
-            return Promise.resolve({ name: name, buffer: null });
-        }
-
-        // 转换为绝对 URL
-        src = resolveUrl(src);
-
-        return fetch(src)
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.arrayBuffer();
-            })
-            .then(function (arrayBuffer) {
-                return audioCtx.decodeAudioData(arrayBuffer);
-            })
-            .then(function (buffer) {
-                return { name: name, buffer: buffer };
-            })
-            .catch(function (e) {
-                // Safari 对某些 MP3 编码解码失败，但 HTML Audio 仍能播放
-                console.warn('Decode failed for:', name, '- will use HTML Audio fallback');
-                return { name: name, buffer: null };
-            });
-    });
-
-    Promise.all(promises).then(function (results) {
-        // 按原始顺序填充 buffers
-        results.forEach(function (result) {
-            buffers.push(result.buffer);
-        });
-        onComplete(buffers);
-    });
 };
 
 LoadingScene.prototype.branchToMenu = function () {

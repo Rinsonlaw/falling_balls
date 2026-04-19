@@ -43,6 +43,7 @@ var GameDirector = function (canvasId) {
 
     this.currentScene = null;   //当前场景
     this.mediaObjects = null;   //媒体对象
+    this.audioManager = new AudioManager(); //音频管理器
     this.isMobile = navigator.maxTouchPoints > 0 ||
                     window.matchMedia('(pointer: coarse)').matches;
     // 缩放信息
