@@ -241,13 +241,13 @@ AnimationScene.prototype.draw = function () {
         if (this.timer.getValue() === 0) {
             result["type"] = FallingBalls.TIME_LIMITED;
             result["score"] = this.score.getValue();
-            gameDirector.runScene(new EndScene(gameDirector.canvas), result);
+            gameDirector.switchScene('end', result);
         }
     } else if (FallingBalls.MODE === FallingBalls.SCORE_LIMITED) {
         if (this.score.getValue() === FallingBalls.SCORE_LIMITED_TARGET) {
             result["type"] = FallingBalls.SCORE_LIMITED;
             result["score"] = this.timer.getValue();
-            gameDirector.runScene(new EndScene(gameDirector.canvas), result);
+            gameDirector.switchScene('end', result);
         }
     }
 };

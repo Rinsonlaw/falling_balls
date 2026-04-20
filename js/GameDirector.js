@@ -18,7 +18,8 @@ $(document).ready(function () {
 
     // 初始化游戏导演
     gameDirector = new GameDirector('canvas');
-    gameDirector.runScene(new LoadingScene(gameDirector.canvas));
+    gameDirector.initSceneRegistry();
+    gameDirector.switchScene('loading');
 
     // 帧率显示器
     if (FallingBalls.IS_SHOW_FPS) {
@@ -48,6 +49,9 @@ var GameDirector = function (canvasId) {
                     window.matchMedia('(pointer: coarse)').matches;
     // 缩放信息
     this.scaledRatio = this.canvas.height / FallingBalls.REFERENCE_CANVAS_HEIGHT;
+
+    // 场景注册表
+    this.scenes = {};
 };
 
 GameDirector.prototype = {
@@ -73,6 +77,40 @@ GameDirector.prototype = {
             gameDirector.currentScene = scene;
             gameDirector.currentScene.start(result);
         });
+    },
+
+    /**
+     * 注册场景
+     *
+     * @param {String} name        场景名称
+     * @param {Function} SceneClass 场景类
+     */
+    registerScene: function (name, SceneClass) {
+        this.scenes[name] = SceneClass;
+    },
+
+    /**
+     * 切换场景（统一入口）
+     *
+     * @param {String} sceneName 场景名称
+     * @param {Object} result    传递给场景的结果数据
+     */
+    switchScene: function (sceneName, result) {
+        var SceneClass = this.scenes[sceneName];
+        if (!SceneClass) {
+            throw new Error('Unknown scene: ' + sceneName);
+        }
+        this.runScene(new SceneClass(this.canvas), result);
+    },
+
+    /**
+     * 初始化场景注册表
+     */
+    initSceneRegistry: function () {
+        this.registerScene('loading', LoadingScene);
+        this.registerScene('start', StartScene);
+        this.registerScene('animation', AnimationScene);
+        this.registerScene('end', EndScene);
     }
 };
 

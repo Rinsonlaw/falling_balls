@@ -110,7 +110,7 @@ StartScene.prototype.changePlayerMode = function () {
     this.soundPoolTouchBtn.play();
     FallingBalls.MODE = FallingBalls.TIME_LIMITED;
 
-    gameDirector.runScene(new AnimationScene(this.canvas));
+    gameDirector.switchScene('animation');
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED TIME MODE");
     }
@@ -120,7 +120,7 @@ StartScene.prototype.changeGroundMode = function () {
     this.soundPoolTouchBtn.play();
     FallingBalls.MODE = FallingBalls.SCORE_LIMITED;
 
-    gameDirector.runScene(new AnimationScene(this.canvas));
+    gameDirector.switchScene('animation');
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED SCORE MODE");
     }

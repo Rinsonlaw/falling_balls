@@ -165,7 +165,7 @@ EndScene.prototype.resize = function () {
 
 EndScene.prototype.branchToMenu = function () {
     this.soundPoolTouchBtn.play();
-    gameDirector.runScene(new StartScene(this.canvas));
+    gameDirector.switchScene('start');
 
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED MENU");
@@ -206,7 +206,7 @@ EndScene.prototype.branchToShare = function () {
 
 EndScene.prototype.branchToPlay = function () {
     this.soundPoolTouchBtn.play();
-    gameDirector.runScene(new AnimationScene(this.canvas));
+    gameDirector.switchScene('animation');
 
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED PLAY");

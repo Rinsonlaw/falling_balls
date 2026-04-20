@@ -132,5 +132,5 @@ LoadingScene.prototype.drawProgressBar = function () {
 };
 
 LoadingScene.prototype.branchToMenu = function () {
-    gameDirector.runScene(new StartScene(this.canvas));
+    gameDirector.switchScene('start');
 };
