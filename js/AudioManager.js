@@ -7,6 +7,7 @@
 var AudioManager = function () {
     this.audioContext = null;
     this.audioBuffers = [];
+    this.defaultVolume = 0.5;
 };
 
 // 音频 Buffer 索引常量
@@ -46,7 +47,7 @@ AudioManager.prototype.setBuffers = function (buffers) {
  */
 AudioManager.prototype.createPool = function (audioType, poolSize) {
     var buffer = this.audioBuffers[audioType] || null;
-    return new AudioPool(buffer, poolSize, this.audioContext);
+    return new AudioPool(buffer, poolSize, this.audioContext, this.defaultVolume);
 };
 
 /**
@@ -128,10 +129,11 @@ AudioManager.prototype.decodeAudioBuffers = function (mediaObjects, onComplete) 
  * @param {Number}      poolSize     池大小
  * @constructor
  */
-var AudioPool = function (audioBuffer, poolSize, audioContext) {
+var AudioPool = function (audioBuffer, poolSize, audioContext, defaultVolume) {
     this.buffer = audioBuffer;
     this.poolSize = poolSize || 4;
     this.audioContext = audioContext;
+    this.defaultVolume = defaultVolume !== undefined ? defaultVolume : 1.0;
     this.pool = [];
 
     for (var i = 0; i < this.poolSize; i++) {
@@ -151,7 +153,7 @@ AudioPool.prototype = {
      * @param {Number} volume  音量 (0-1)
      */
     play: function (volume) {
-        volume = volume !== undefined ? volume : 1.0;
+        volume = volume !== undefined ? volume : this.defaultVolume;
 
         if (!this.buffer) return;
 
