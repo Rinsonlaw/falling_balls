@@ -69,13 +69,17 @@ GameDirector.prototype = {
             this.currentScene.destroy();
         }
 
+        // 将 gameDirector 绑定到 scene
+        scene.director = this;
+
+        var self = this;
         // 运行新场景
         $("#" + this.canvas.id).fadeOut(function () {
-            clearCanvas(gameDirector.canvas);
-            $("#" + gameDirector.canvas.id).fadeIn();
+            clearCanvas(self.canvas);
+            $("#" + self.canvas.id).fadeIn();
 
-            gameDirector.currentScene = scene;
-            gameDirector.currentScene.start(result);
+            self.currentScene = scene;
+            self.currentScene.start(result);
         });
     },
 

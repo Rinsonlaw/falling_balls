@@ -7,7 +7,7 @@
 var AudioManager = function () {
     this.audioContext = null;
     this.audioBuffers = [];
-    this.defaultVolume = 0.5;
+    this.defaultVolume = 0.1;
 };
 
 // 音频 Buffer 索引常量

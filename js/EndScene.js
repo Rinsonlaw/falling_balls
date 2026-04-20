@@ -7,9 +7,6 @@
 var EndScene = function (canvas) {
     Scene.call(this, canvas);
 
-    // 多媒体对象
-    this.imageArray = gameDirector.mediaObjects.image.content;
-
     // 游戏结果信息
     this.resultStr = "";
     this.result = null;
@@ -35,12 +32,15 @@ EndScene.prototype = Object.create(Scene.prototype);
 EndScene.prototype.constructor = EndScene;
 
 EndScene.prototype.init = function () {
+    // 多媒体对象
+    this.imageArray = this.director.mediaObjects.image.content;
+
     // 初始化 Web Audio 上下文（需用户交互后调用）
-    gameDirector.audioManager.initContext();
+    this.director.audioManager.initContext();
 
     // 音频节点池（基于 Web Audio API）
-    this.soundPoolGameOver = gameDirector.audioManager.createPool(AudioManager.AUDIO_GAME_OVER, 1);
-    this.soundPoolTouchBtn = gameDirector.audioManager.createPool(AudioManager.AUDIO_TOUCH_BTN, 1);
+    this.soundPoolGameOver = this.director.audioManager.createPool(AudioManager.AUDIO_GAME_OVER, 1);
+    this.soundPoolTouchBtn = this.director.audioManager.createPool(AudioManager.AUDIO_TOUCH_BTN, 1);
 
     // 注册监听器
     this.canvas.addEventListener("touchend", this.bindOnTouchMenu);
@@ -165,7 +165,7 @@ EndScene.prototype.resize = function () {
 
 EndScene.prototype.branchToMenu = function () {
     this.soundPoolTouchBtn.play();
-    gameDirector.switchScene('start');
+    this.director.switchScene('start');
 
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED MENU");
@@ -206,7 +206,7 @@ EndScene.prototype.branchToShare = function () {
 
 EndScene.prototype.branchToPlay = function () {
     this.soundPoolTouchBtn.play();
-    gameDirector.switchScene('animation');
+    this.director.switchScene('animation');
 
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED PLAY");

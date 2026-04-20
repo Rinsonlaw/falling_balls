@@ -7,9 +7,6 @@
 var StartScene = function (canvas) {
     Scene.call(this, canvas);
 
-    // 多媒体对象
-    this.imageArray = gameDirector.mediaObjects.image.content;
-
     // 按钮
     this.leftBtn = new Button(this.scaledHcanvasWidth - 180, this.scaledHcanvasHeight - 50, 400, 100, this.scaledRatio);
     this.rightBtn = new Button(this.scaledHcanvasWidth - 180, this.scaledHcanvasHeight - 50 + this.scaledHcanvasHeight * 0.3, 400, 100, this.scaledRatio);
@@ -26,11 +23,14 @@ StartScene.prototype = Object.create(Scene.prototype);
 StartScene.prototype.constructor = StartScene;
 
 StartScene.prototype.init = function () {
+    // 多媒体对象
+    this.imageArray = this.director.mediaObjects.image.content;
+
     // 初始化 Web Audio 上下文（需用户交互后调用）
-    gameDirector.audioManager.initContext();
+    this.director.audioManager.initContext();
 
     // 音频节点池（基于 Web Audio API）
-    this.soundPoolTouchBtn = gameDirector.audioManager.createPool(AudioManager.AUDIO_TOUCH_BTN, 1);
+    this.soundPoolTouchBtn = this.director.audioManager.createPool(AudioManager.AUDIO_TOUCH_BTN, 1);
 
     // 注册监听器
     this.canvas.addEventListener("touchend", this.bindOnTouchEndLeft);
@@ -110,7 +110,7 @@ StartScene.prototype.changePlayerMode = function () {
     this.soundPoolTouchBtn.play();
     FallingBalls.MODE = FallingBalls.TIME_LIMITED;
 
-    gameDirector.switchScene('animation');
+    this.director.switchScene('animation');
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED TIME MODE");
     }
@@ -120,7 +120,7 @@ StartScene.prototype.changeGroundMode = function () {
     this.soundPoolTouchBtn.play();
     FallingBalls.MODE = FallingBalls.SCORE_LIMITED;
 
-    gameDirector.switchScene('animation');
+    this.director.switchScene('animation');
     if (FallingBalls.IS_DEBUG_MODE){
         console.info("CLICKED SCORE MODE");
     }

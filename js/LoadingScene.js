@@ -50,10 +50,10 @@ LoadingScene.prototype.init = function () {
             console.error("Media did not load properly");
             return;
         }
-        gameDirector.mediaObjects = mediaObjects;
+        that.director.mediaObjects = mediaObjects;
 
         // 预解码音频为 Web Audio API Buffer
-        gameDirector.audioManager.decodeAudioBuffers(mediaObjects, function () {
+        that.director.audioManager.decodeAudioBuffers(mediaObjects, function () {
             that.branchToMenu();
         });
     });
@@ -132,5 +132,5 @@ LoadingScene.prototype.drawProgressBar = function () {
 };
 
 LoadingScene.prototype.branchToMenu = function () {
-    gameDirector.switchScene('start');
+    this.director.switchScene('start');
 };

@@ -21,16 +21,6 @@ var COLLISION_TYPE = {
 var AnimationScene = function (canvas) {
     Scene.call(this, canvas);
 
-    // 多媒体对象
-    this.imageArray = gameDirector.mediaObjects.image.content;
-
-    // 音频节点池（基于 Web Audio API）
-    var audioMgr = gameDirector.audioManager;
-    this.soundPoolBounce = audioMgr.createPool(AudioManager.AUDIO_BOUNCE, 4);
-    this.soundPoolGoal = audioMgr.createPool(AudioManager.AUDIO_GOAL, 4);
-    this.soundPoolTouchBuff = audioMgr.createPool(AudioManager.AUDIO_TOUCH_BUFF, 4);
-    this.soundPoolGameStart = audioMgr.createPool(AudioManager.AUDIO_GAME_START, 1);
-
     // 游戏控制相关
     this.space = new cp.Space();    // 重力空间
     this.fps = 0;                   // 帧率
@@ -96,6 +86,16 @@ AnimationScene.prototype = Object.create(Scene.prototype);
 AnimationScene.prototype.constructor = AnimationScene;
 
 AnimationScene.prototype.init = function () {
+    // 多媒体对象
+    this.imageArray = this.director.mediaObjects.image.content;
+
+    // 音频节点池（基于 Web Audio API）
+    var audioMgr = this.director.audioManager;
+    this.soundPoolBounce = audioMgr.createPool(AudioManager.AUDIO_BOUNCE, 4);
+    this.soundPoolGoal = audioMgr.createPool(AudioManager.AUDIO_GOAL, 4);
+    this.soundPoolTouchBuff = audioMgr.createPool(AudioManager.AUDIO_TOUCH_BUFF, 4);
+    this.soundPoolGameStart = audioMgr.createPool(AudioManager.AUDIO_GAME_START, 1);
+
     setBoundary(this.getShortEdge());
 
     // 初始化离屏 canvas
@@ -152,7 +152,7 @@ AnimationScene.prototype.init = function () {
     this.canvas.addEventListener("touchend", this.bindOnTouchEndRight);
 
     // 初始化 Web Audio 上下文（需用户交互后调用）
-    gameDirector.audioManager.initContext();
+    this.director.audioManager.initContext();
 
     // 播放游戏开始音频
     this.soundPoolGameStart.play();
@@ -241,13 +241,13 @@ AnimationScene.prototype.draw = function () {
         if (this.timer.getValue() === 0) {
             result["type"] = FallingBalls.TIME_LIMITED;
             result["score"] = this.score.getValue();
-            gameDirector.switchScene('end', result);
+            this.director.switchScene('end', result);
         }
     } else if (FallingBalls.MODE === FallingBalls.SCORE_LIMITED) {
         if (this.score.getValue() === FallingBalls.SCORE_LIMITED_TARGET) {
             result["type"] = FallingBalls.SCORE_LIMITED;
             result["score"] = this.timer.getValue();
-            gameDirector.switchScene('end', result);
+            this.director.switchScene('end', result);
         }
     }
 };
@@ -371,10 +371,10 @@ AnimationScene.prototype.resize = function () {
 };
 
 AnimationScene.prototype.getShortEdge = function () {
-    var height = gameDirector.cssHeight;
-    var width = gameDirector.cssWidth;
+    var height = this.director.cssHeight;
+    var width = this.director.cssWidth;
 
-    if (gameDirector.isMobile) {
+    if (this.director.isMobile) {
         height *= this.scaledRatio;
         width *= this.scaledRatio;
     }
@@ -412,7 +412,7 @@ AnimationScene.prototype.setSpace = function () {
             var now = performance.now();
             if (now - lastBounceTime > 50) {  // 最多每50ms播放一次
                 lastBounceTime = now;
-                that.soundPoolBounce.play(0.1);
+                that.soundPoolBounce.play(0.1 * that.director.audioManager.defaultVolume);
             }
             return true;
         }
